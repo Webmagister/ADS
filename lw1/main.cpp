@@ -21,10 +21,12 @@ int main() {
     std::ifstream file("input.txt");
 
     if (!file.is_open()) {
+        std::cout << "File does not open." << std::endl;
         return 1;
     }
     if (isEmptyFile(file)) {
         std::cout << "File is empty." << std::endl;
+        file.close();
         return 1;
     }
 
@@ -51,5 +53,6 @@ int main() {
         for (std::string elem:list) { std::cout << elem << std::endl; }
     }
 
+    file.close();
     return 0;
 }

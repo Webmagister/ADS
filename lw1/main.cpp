@@ -18,7 +18,7 @@ bool isEmptyFile(std::ifstream &pFile) {
 }
 
 int main() {
-    std::ifstream file("../input.txt");
+    std::ifstream file("input.txt");
 
     if (!file.is_open()) {
         return 1;

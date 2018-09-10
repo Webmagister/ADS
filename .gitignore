@@ -32,3 +32,8 @@
 *.app
 
 .idea
+CmakeFiles
+*.cbp
+Makefile
+CMakeCache.txt
+cmake_install.cmake

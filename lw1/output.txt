@@ -1,2 +1,1 @@
-¨êê¸
-¸êê¸
+Palindrome is not defined.

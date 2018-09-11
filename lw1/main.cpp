@@ -30,16 +30,24 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (static_cast<std::string>(argv[1]) == static_cast<std::string>(argv[2]))
+    {
+        std::cout << "Files is equal." << std::endl;
+        return 1;
+    }
+
     std::ifstream inputFile(argv[1]);
     std::ofstream outputFile(argv[2]);
 
-    if (!inputFile.is_open()) {
-        outputFile << "File does not open." << std::endl;
+    if (!inputFile.is_open() || !outputFile.is_open()) {
+        std::cout << "File does not open." << std::endl;
         return 1;
     }
+
     if (isEmptyFile(inputFile)) {
         outputFile << "File is empty." << std::endl;
         inputFile.close();
+        outputFile.close();
         return 1;
     }
 
@@ -66,6 +74,7 @@ int main(int argc, char *argv[]) {
         for (std::string elem:list) { outputFile << elem << std::endl; }
     }
 
+    outputFile.close();
     inputFile.close();
     return 0;
 }

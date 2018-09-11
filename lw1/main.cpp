@@ -3,7 +3,14 @@
 #include <vector>
 #include <cmath>
 
-bool isPalindorm(std::string word) {
+bool isPalindorme(std::string word) {
+
+    for (int i = 0; i < word.length(); i++) {
+        if (word[i] > 'A' && word[i] < 'Z') word[i] += 32;
+        if (static_cast<int>(word[i]) == -72) word[i] -= 16;
+        if (static_cast<int>(word[i]) > -64 && static_cast<int>(word[i]) < -33) word[i] += 32;
+    }
+
     for (int i = 0; i < std::floor(word.length() / 2); ++i) {
         if (word[i] != word[word.length() - i - 1]) {
             return false;
@@ -17,16 +24,22 @@ bool isEmptyFile(std::ifstream &pFile) {
     return pFile.peek() == std::ifstream::traits_type::eof();
 }
 
-int main() {
-    std::ifstream file("input.txt");
-
-    if (!file.is_open()) {
-        std::cout << "File does not open." << std::endl;
+int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        std::cout << "There are not enough files." << std::endl;
         return 1;
     }
-    if (isEmptyFile(file)) {
-        std::cout << "File is empty." << std::endl;
-        file.close();
+
+    std::ifstream inputFile(argv[1]);
+    std::ofstream outputFile(argv[2]);
+
+    if (!inputFile.is_open()) {
+        outputFile << "File does not open." << std::endl;
+        return 1;
+    }
+    if (isEmptyFile(inputFile)) {
+        outputFile << "File is empty." << std::endl;
+        inputFile.close();
         return 1;
     }
 
@@ -34,9 +47,9 @@ int main() {
     std::vector<std::string> list;
     unsigned long long int maxLength = 0;
 
-    while (!file.eof()) {
-        file >> word;
-        if (isPalindorm(word)) {
+    while (!inputFile.eof()) {
+        inputFile >> word;
+        if (isPalindorme(word)) {
             if (word.length() > maxLength) {
                 maxLength = word.length();
                 list.clear();
@@ -48,11 +61,11 @@ int main() {
     }
 
     if (list.empty()) {
-        std::cout << "Palindrom is not defined." << std::endl;
+        outputFile << "Palindrome is not defined." << std::endl;
     } else {
-        for (std::string elem:list) { std::cout << elem << std::endl; }
+        for (std::string elem:list) { outputFile << elem << std::endl; }
     }
 
-    file.close();
+    inputFile.close();
     return 0;
 }

@@ -1,14 +1,20 @@
+/*
+    Задан текстовый файл. Требуется выдать все палиндромы
+    из максимального количества букв. Палиндромом называется слово,
+    которое читается одинаково слева направо и справа налево.
+
+    Атайкин Павел, ПС-21
+ */
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 bool isPalindorme(std::string word) {
 
     for (int i = 0; i < word.length(); i++) {
-        if (word[i] > 'A' && word[i] < 'Z') word[i] += 32;
-        if (static_cast<int>(word[i]) == -72) word[i] -= 16;
-        if (static_cast<int>(word[i]) > -64 && static_cast<int>(word[i]) < -33) word[i] += 32;
+        if (word[i] < 'A' && word[i] > 0) return false;
     }
 
     for (int i = 0; i < std::floor(word.length() / 2); ++i) {
@@ -30,8 +36,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (static_cast<std::string>(argv[1]) == static_cast<std::string>(argv[2]))
-    {
+    if (static_cast<std::string>(argv[1]) == static_cast<std::string>(argv[2])) {
         std::cout << "Files is equal." << std::endl;
         return 1;
     }
@@ -57,12 +62,25 @@ int main(int argc, char *argv[]) {
 
     while (!inputFile.eof()) {
         inputFile >> word;
+
+        for (int i = 0; i < word.length(); i++) {
+            if (word[i] > 'A' && word[i] < 'Z') word[i] += 32;
+            if (static_cast<int>(word[i]) == -72) word[i] -= 16;
+            if (static_cast<int>(word[i]) > -64 && static_cast<int>(word[i]) < -33) word[i] += 32;
+        }
+
+        if ((word[word.length() - 1] == ',') || (word[word.length() - 1] == '.') || (word[word.length() - 1] == ':') ||
+            (word[word.length() - 1] == ';') || (word[word.length() - 1] == '!') || (word[word.length() - 1] == '?')) {
+            word.pop_back();
+        }
+
         if (isPalindorme(word)) {
             if (word.length() > maxLength) {
                 maxLength = word.length();
                 list.clear();
             }
-            if (word.length() == maxLength) {
+
+            if (word.length() == maxLength && !(std::find(list.begin(), list.end(), word) != list.end())) {
                 list.push_back(word);
             }
         }

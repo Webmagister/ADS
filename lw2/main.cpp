@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::wifstream inputFile(argv[1]);
-    std::ofstream outputFile(argv[2]);
+    std::wofstream outputFile(argv[2]);
 
     if (!inputFile.is_open() || !outputFile.is_open()) {
         std::cout << "File does not open." << std::endl;
@@ -58,13 +58,13 @@ int main(int argc, char *argv[]) {
         wchar_t symbol = inputFile.get();
         if (symbol != ' ' && symbol != std::wifstream::traits_type::eof()) {
             if (isdigit(symbol)) {
-                std::wcout << symbol;
+                outputFile << symbol;
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end()) {
                 while (!stack.empty() &&
                        arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second
                        && symbol != '(') {
-                    std::wcout << stack.top();
+                    outputFile << stack.top();
                     stack.pop();
                 }
                 stack.push(symbol);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
                 while (symbolInStack != '(') {
                     symbolInStack = stack.top();
                     if (symbolInStack != '(') {
-                        std::wcout << symbolInStack;
+                        outputFile << symbolInStack;
                     }
                     stack.pop();
                 }
@@ -84,14 +84,15 @@ int main(int argc, char *argv[]) {
 
     if (!stack.empty()) {
         while (!stack.empty()) {
-            std::wcout << stack.top();
+            outputFile << stack.top();
             stack.pop();
         }
     }
 
-    std::cout << std::endl;
+    outputFile << std::endl;
 
     inputFile.close();
     outputFile.close();
+
     return 0;
 }

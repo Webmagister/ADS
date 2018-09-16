@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
                 outputFile << symbol;
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end()) {
+                outputFile << ' ';
                 while (!stack.empty() &&
                        arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second
                        && symbol != '(') {

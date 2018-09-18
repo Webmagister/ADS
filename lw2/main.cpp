@@ -10,11 +10,32 @@
  */
 #include <iostream>
 #include <fstream>
-#include <stack>
 #include <map>
+#include <vector>
 
-bool isEmptyFile(std::wifstream &pFile) {
-    return pFile.peek() == std::wifstream::traits_type::eof();
+struct Stack {
+
+    std::vector<char> list;
+
+    char top() {
+        return list.back();
+    }
+
+    void pop() {
+        list.pop_back();
+    }
+
+    void push(char symbol) {
+        list.push_back(symbol);
+    }
+
+    bool empty() {
+        return list.empty();
+    }
+};
+
+bool isEmptyFile(std::ifstream &pFile) {
+    return pFile.peek() == std::ifstream::traits_type::eof();
 }
 
 int main(int argc, char *argv[]) {
@@ -29,8 +50,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::wifstream inputFile(argv[1]);
-    std::wofstream outputFile(argv[2]);
+    std::ifstream inputFile(argv[1]);
+    std::ofstream outputFile(argv[2]);
 
     if (!inputFile.is_open() || !outputFile.is_open()) {
         std::cout << "File does not open." << std::endl;
@@ -43,9 +64,10 @@ int main(int argc, char *argv[]) {
         outputFile.close();
         return 1;
     }
+    
+    Stack stack;
 
-    std::stack<wchar_t> stack;
-    const std::map<char16_t, int> arithmeticSings = {
+    const std::map<char, int> arithmeticSings = {
             {u'(', 0},
             {u'+', 1},
             {u'-', 1},
@@ -55,8 +77,8 @@ int main(int argc, char *argv[]) {
     };
 
     while (!inputFile.eof()) {
-        wchar_t symbol = inputFile.get();
-        if (symbol != ' ' && symbol != std::wifstream::traits_type::eof()) {
+        char symbol = inputFile.get();
+        if (symbol != ' ' && symbol != std::ifstream::traits_type::eof()) {
             if (isdigit(symbol)) {
                 outputFile << symbol;
             }

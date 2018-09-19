@@ -68,12 +68,12 @@ int main(int argc, char *argv[]) {
     Stack stack;
 
     const std::map<char, int> arithmeticSings = {
-            {u'(', 0},
-            {u'+', 1},
-            {u'-', 1},
-            {u'*', 2},
-            {u'/', 2},
-            {u'^', 3}
+            {'(', 0},
+            {'+', 1},
+            {'-', 1},
+            {'*', 2},
+            {'/', 2},
+            {'^', 3}
     };
 
     while (!inputFile.eof()) {

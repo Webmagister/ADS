@@ -83,7 +83,8 @@ int main(int argc, char *argv[])
             {'-', 1},
             {'*', 2},
             {'/', 2},
-            {'^', 3}
+            {'^', 3},
+            {'~', 4}
     };
 
     while (!inputFile.eof())
@@ -95,15 +96,17 @@ int main(int argc, char *argv[])
             if (isdigit(symbol))
             {
                 outputFile << symbol;
-            } else
+            }
+            else
             {
                 outputFile << ' ';
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end())
             {
-                while (!stack.empty() &&
-                       arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second &&
-                       symbol != '(' && symbol != '^')
+                while (!stack.empty()
+                       && arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second
+                       && symbol != '('
+                       && symbol != '^')
                 {
                     outputFile << stack.top() << ' ';
                     stack.pop();

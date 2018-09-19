@@ -89,20 +89,23 @@ int main(int argc, char *argv[])
     while (!inputFile.eof())
     {
         char symbol = inputFile.get();
+
         if (symbol != ' ' && symbol != std::ifstream::traits_type::eof())
         {
             if (isdigit(symbol))
             {
                 outputFile << symbol;
+            } else
+            {
+                outputFile << ' ';
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end())
             {
-                outputFile << ' ';
                 while (!stack.empty() &&
-                       arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second
-                       && symbol != '(')
+                       arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second &&
+                       symbol != '(' && symbol != '^')
                 {
-                    outputFile << stack.top();
+                    outputFile << stack.top() << ' ';
                     stack.pop();
                 }
                 stack.push(symbol);
@@ -127,7 +130,7 @@ int main(int argc, char *argv[])
     {
         while (!stack.empty())
         {
-            outputFile << stack.top();
+            outputFile << ' ' << stack.top();
             stack.pop();
         }
     }

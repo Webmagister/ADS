@@ -36,6 +36,14 @@ struct Stack
     {
         return list.empty();
     }
+
+    void printStack()
+    {
+        for (char i : list)
+        {
+            std::cout << i;
+        }
+    }
 };
 
 bool isEmptyFile(std::ifstream &pFile)
@@ -93,6 +101,8 @@ int main(int argc, char *argv[])
 
         if (symbol != ' ' && symbol != std::ifstream::traits_type::eof())
         {
+            std::cout << symbol << " | ";
+
             if (isdigit(symbol))
             {
                 outputFile << symbol;
@@ -126,6 +136,9 @@ int main(int argc, char *argv[])
                     stack.pop();
                 }
             }
+
+            stack.printStack();
+            std::cout << std::endl;
         }
     }
 

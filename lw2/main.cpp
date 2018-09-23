@@ -78,11 +78,19 @@ float calc(std::string expression, std::map<char, int> arithmeticSings)
         {
             float a = stack.top();
             stack.pop();
-            float b = stack.top();
-            stack.pop();
+            float b = 0;
+            if (expression[i] != '~')
+            {
+                b = stack.top();
+                stack.pop();
+            }
 
             switch (expression[i])
             {
+                case '~':
+                    result = -a;
+
+                    break;
                 case '+':
                     result = b + a;
                     break;
@@ -146,7 +154,7 @@ int main(int argc, char *argv[])
     const std::map<char, int> arithmeticSings = {
             {'(', 0},
             {')', 1},
-            {'+', 2},
+            {'+', 3},
             {'-', 3},
             {'*', 4},
             {'/', 4},
@@ -174,7 +182,11 @@ int main(int argc, char *argv[])
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end())
             {
-                if (symbol == '(')
+                if (symbol == '-' && (inputFile.peek() == '(' || currentState == " " || stack.top() == '('))
+                {
+                    stack.push('~');
+                }
+                else if (symbol == '(')
                 {
                     stack.push(symbol);
                 }
@@ -219,6 +231,7 @@ int main(int argc, char *argv[])
         {
             outputFile << ' ' << stack.top();
             currentState.push_back(stack.top());
+            currentState.push_back(' ');
             stack.pop();
         }
     }

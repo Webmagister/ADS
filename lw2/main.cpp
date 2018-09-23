@@ -12,6 +12,8 @@
 #include <fstream>
 #include <map>
 #include <vector>
+#include <stack>
+#include <cmath>
 
 struct Stack
 {
@@ -51,6 +53,61 @@ bool isEmptyFile(std::ifstream &pFile)
     return pFile.peek() == std::ifstream::traits_type::eof();
 }
 
+float calc(std::string expression, std::map<char, int> arithmeticSings)
+{
+    float result = 0;
+    std::stack<float> stack;
+
+    for (int i = 0; i < expression.length(); i++)
+    {
+        if (isdigit(expression[i]))
+        {
+            std::string number;
+
+            while (expression[i] != ' ' && arithmeticSings.find(expression[i]) == arithmeticSings.end())
+            {
+                number += expression[i];
+                i++;
+                if (i == expression.length()) break;
+            }
+
+            stack.push(std::stof(number));
+            i--;
+        }
+        else if (arithmeticSings.find(expression[i]) != arithmeticSings.end())
+        {
+            float a = stack.top();
+            stack.pop();
+            float b = stack.top();
+            stack.pop();
+
+            switch (expression[i])
+            {
+                case '+':
+                    result = b + a;
+                    break;
+                case '-':
+                    result = b - a;
+                    break;
+                case '*':
+                    result = b * a;
+                    break;
+                case '/':
+                    result = b / a;
+                    break;
+                case '^':
+                    result = pow(b, a);
+                    break;
+                default:
+                    break;
+            }
+            stack.push(result);
+        }
+    }
+
+    return stack.top();
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -88,12 +145,13 @@ int main(int argc, char *argv[])
 
     const std::map<char, int> arithmeticSings = {
             {'(', 0},
-            {'+', 1},
-            {'-', 1},
-            {'*', 2},
-            {'/', 2},
-            {'^', 3},
-            {'~', 4}
+            {')', 1},
+            {'+', 2},
+            {'-', 3},
+            {'*', 4},
+            {'/', 4},
+            {'^', 5},
+            {'~', 6}
     };
 
     while (!inputFile.eof())
@@ -116,29 +174,36 @@ int main(int argc, char *argv[])
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end())
             {
-                while (!stack.empty()
-                       && arithmeticSings.find(stack.top())->second >= arithmeticSings.find(symbol)->second
-                       && symbol != '('
-                       && symbol != '^')
+                if (symbol == '(')
                 {
-                    outputFile << stack.top() << ' ';
-                    currentState.push_back(stack.top());
-                    currentState += ' ';
-                    stack.pop();
+                    stack.push(symbol);
                 }
-                stack.push(symbol);
-            }
-            if (symbol == ')')
-            {
-                char symbolInStack = ')';
-                while (symbolInStack != '(')
+                else if (symbol == ')')
                 {
-                    symbolInStack = stack.top();
-                    if (symbolInStack != '(')
+                    char symbolInStack = stack.top();
+                    stack.pop();
+
+                    while (symbolInStack != '(')
                     {
                         outputFile << symbolInStack;
+                        currentState.push_back(symbolInStack);
+                        symbolInStack = stack.top();
+                        stack.pop();
                     }
-                    stack.pop();
+                }
+                else
+                {
+                    if (!stack.empty())
+                    {
+                        if (arithmeticSings.find(symbol)->second <= arithmeticSings.find(stack.top())->second)
+                        {
+                            outputFile << stack.top() << ' ';
+                            currentState.push_back(stack.top());
+                            currentState += ' ';
+                            stack.pop();
+                        }
+                    }
+                    stack.push(symbol);
                 }
             }
 
@@ -153,11 +218,12 @@ int main(int argc, char *argv[])
         while (!stack.empty())
         {
             outputFile << ' ' << stack.top();
+            currentState.push_back(stack.top());
             stack.pop();
         }
     }
 
-    outputFile << std::endl;
+    outputFile << std::endl << "Result: " << calc(currentState, arithmeticSings) << std::endl;
     std::cout << std::endl;
 
     inputFile.close();

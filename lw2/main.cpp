@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
     }
 
     Stack stack;
+    std::string currentState;
 
     const std::map<char, int> arithmeticSings = {
             {'(', 0},
@@ -106,10 +107,12 @@ int main(int argc, char *argv[])
             if (isdigit(symbol))
             {
                 outputFile << symbol;
+                currentState += symbol;
             }
             else
             {
                 outputFile << ' ';
+                currentState += ' ';
             }
             if (arithmeticSings.find(symbol) != arithmeticSings.end())
             {
@@ -119,6 +122,8 @@ int main(int argc, char *argv[])
                        && symbol != '^')
                 {
                     outputFile << stack.top() << ' ';
+                    currentState.push_back(stack.top());
+                    currentState += ' ';
                     stack.pop();
                 }
                 stack.push(symbol);
@@ -137,6 +142,7 @@ int main(int argc, char *argv[])
                 }
             }
 
+            std::cout << currentState << " | ";
             stack.printStack();
             std::cout << std::endl;
         }
@@ -152,6 +158,7 @@ int main(int argc, char *argv[])
     }
 
     outputFile << std::endl;
+    std::cout << std::endl;
 
     inputFile.close();
     outputFile.close();

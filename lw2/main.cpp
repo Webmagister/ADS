@@ -89,7 +89,6 @@ float calc(std::string expression, std::map<char, int> arithmeticSings)
             {
                 case '~':
                     result = -a;
-
                     break;
                 case '+':
                     result = b + a;
@@ -207,7 +206,9 @@ int main(int argc, char *argv[])
                 {
                     if (!stack.empty())
                     {
-                        if (arithmeticSings.find(symbol)->second <= arithmeticSings.find(stack.top())->second)
+                        while (!stack.empty()
+                               && arithmeticSings.find(symbol)->second <= arithmeticSings.find(stack.top())->second
+                               && symbol != '^')
                         {
                             outputFile << stack.top() << ' ';
                             currentState.push_back(stack.top());

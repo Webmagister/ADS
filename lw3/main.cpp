@@ -1,5 +1,5 @@
 /*
-    В  листьях  И-ИЛИ  дерева,  соответствующего некоторому
+    В листьях И-ИЛИ дерева, соответствующего некоторому
     множеству  конструкций,  заданы   значения   массы.   Известно
     максимально допустимое значение массы изделия. Требуется усечь
     дерево так, чтобы дерево включало все элементы,
@@ -25,97 +25,25 @@ public:
         OR = '|',
         LEAF
     };
-
+    typeOfNode type = LEAF;
     std::string name = "";
     std::string weightStr = "";
 
-    int weight = 0;
     int maxWeight = 0;
     int minWeight = 0;
+    int weight = 0;
 
-    bool didGetName = false;
     bool canHaveWeight = true;
-
-    typeOfNode type = LEAF;
+    bool getName = false;
 
     std::vector<Tree> children;
-
-    void get(std::string fileContent, size_t &pointer, int initialStarsCount)
-    {
-        while (pointer <= fileContent.length())
-        {
-            if (fileContent[pointer] == '\n' || pointer == fileContent.length())
-            {
-                size_t tempPointer = pointer;
-                if (this->type == LEAF)
-                {
-                    this->weight = std::stoi(this->weightStr);
-                }
-                else
-                {
-                    this->canHaveWeight = false;
-                }
-                pointer++;
-
-                if (pointer > fileContent.length()) break;
-
-                int currStarCount = 0;
-                while (fileContent[pointer] == '*')
-                {
-                    currStarCount++;
-                    pointer++;
-                }
-
-                if (pointer > fileContent.length()) break;
-
-                if (initialStarsCount < currStarCount)
-                {
-                    Tree child;
-                    child.get(fileContent, pointer, currStarCount);
-                    this->children.push_back(child);
-                }
-                else
-                {
-                    pointer = tempPointer - 1;
-                    break;
-                }
-            }
-
-            if (fileContent[pointer] == ' ')
-            {
-                this->didGetName = true;
-
-                pointer++;
-                continue;
-            }
-
-            if (!this->didGetName)
-            {
-                this->name += fileContent[pointer];
-            }
-            else
-            {
-                if (fileContent[pointer] == '&' || fileContent[pointer] == '|')
-                {
-                    this->type = fileContent[pointer] == '&' ? AND : OR;
-                }
-                else if (this->canHaveWeight)
-                {
-                    this->weightStr += fileContent[pointer];
-                }
-            }
-
-            pointer++;
-        }
-    }
-
 
     void setMinMaxRoot()
     {
         Tree &firstChild = this->children.front();
-
         int minWeight = 0;
         int maxWeight = 0;
+
         if (firstChild.type != LEAF)
         {
             firstChild.setMinMaxRoot();
@@ -172,16 +100,16 @@ public:
         this->maxWeight = maxWeight;
     };
 
-    void trimTree(int maxWeight)
+    void trimTree(const int maxWeight)
     {
         size_t size = this->children.size();
         for (size_t i = 0; i < size; i++)
         {
-            Tree &child = this->children[i];
+            Tree &item = this->children[i];
 
-            if (child.type == LEAF)
+            if (item.type == LEAF)
             {
-                if (child.weight > maxWeight && this->type == OR && size > 1)
+                if (item.weight > maxWeight && this->type == OR && size > 1)
                 {
                     this->children.erase(this->children.begin() + i);
                     if (i != 0) i--;
@@ -191,23 +119,23 @@ public:
                 continue;
             }
 
-            int maxWeightCurrChild = maxWeight;
+            int maxWeightCurrItem = maxWeight;
             for (size_t j = 0; j < size; j++)
             {
                 if (j == i) continue;
                 if (this->children[j].type == LEAF)
                 {
-                    maxWeightCurrChild -= this->children[j].weight;
+                    maxWeightCurrItem -= this->children[j].weight;
                 }
                 else
                 {
-                    maxWeightCurrChild -= this->children[j].minWeight;
+                    maxWeightCurrItem -= this->children[j].minWeight;
                 }
             }
 
-            child.trimTree(maxWeightCurrChild);
+            item.trimTree(maxWeightCurrItem);
 
-            if (this->type == OR && child.minWeight > maxWeightCurrChild && size > 1)
+            if (this->type == OR && item.minWeight > maxWeightCurrItem && size > 1)
             {
                 this->children.erase(this->children.begin() + i);
                 i--;
@@ -218,6 +146,75 @@ public:
 
         this->setMinMaxRoot();
     };
+
+    void get(std::string fileContent, size_t &pointer, int initialStarsCount)
+    {
+        while (pointer <= fileContent.length())
+        {
+            if (fileContent[pointer] == '\n' || pointer == fileContent.length())
+            {
+                size_t tempPointer = pointer;
+                if (this->type == LEAF)
+                {
+                    this->weight = std::stoi(this->weightStr);
+                }
+                else
+                {
+                    this->canHaveWeight = false;
+                }
+                pointer++;
+
+                if (pointer > fileContent.length()) break;
+
+                int currStarCount = 0;
+                while (fileContent[pointer] == '*')
+                {
+                    currStarCount++;
+                    pointer++;
+                }
+
+                if (pointer > fileContent.length()) break;
+
+                if (initialStarsCount < currStarCount)
+                {
+                    Tree child;
+                    child.get(fileContent, pointer, currStarCount);
+                    this->children.push_back(child);
+                }
+                else
+                {
+                    pointer = tempPointer - 1;
+                    break;
+                }
+            }
+
+            if (fileContent[pointer] == ' ')
+            {
+                this->getName = true;
+
+                pointer++;
+                continue;
+            }
+
+            if (!this->getName)
+            {
+                this->name += fileContent[pointer];
+            }
+            else
+            {
+                if (fileContent[pointer] == '&' || fileContent[pointer] == '|')
+                {
+                    this->type = fileContent[pointer] == '&' ? AND : OR;
+                }
+                else if (this->canHaveWeight)
+                {
+                    this->weightStr += fileContent[pointer];
+                }
+            }
+
+            pointer++;
+        }
+    }
 
     std::string toString()
     {
@@ -235,20 +232,7 @@ public:
     };
 };
 
-int getMaxWeight(std::string fileContent, size_t &pointer)
-{
-    std::string maxWeightStr = "";
-    while (fileContent[pointer] != '\n')
-    {
-        maxWeightStr += fileContent[pointer];
-        pointer++;
-    }
-    pointer++;
-
-    return std::stoi(maxWeightStr);
-}
-
-void printTree(std::ofstream &outputFile, Tree tree, const std::string indent)
+void printTree(std::ofstream &outputFile, Tree tree, const std::string &indent)
 {
     outputFile << indent << tree.toString() << std::endl;
 
@@ -260,9 +244,10 @@ void printTree(std::ofstream &outputFile, Tree tree, const std::string indent)
 
 std::string readAllFile(std::ifstream &inFile)
 {
-    std::stringstream fileContentStream;
-    fileContentStream << inFile.rdbuf();
-    return fileContentStream.str();
+    std::stringstream fileContent;
+    fileContent << inFile.rdbuf();
+
+    return fileContent.str();
 }
 
 int main(int argc, char *argv[])
@@ -291,7 +276,15 @@ int main(int argc, char *argv[])
     std::string fileContent = readAllFile(inputFile);
     size_t pointer = 0;
 
-    int maxWeight = getMaxWeight(fileContent, pointer);
+    int maxWeight;
+    std::string maxWeightStr;
+    while (fileContent[pointer] != '\n')
+    {
+        maxWeightStr += fileContent[pointer];
+        pointer++;
+    }
+    pointer++;
+    maxWeight = std::stoi(maxWeightStr);
 
     Tree root;
     root.get(fileContent, pointer, 0);

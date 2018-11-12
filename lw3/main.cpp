@@ -16,9 +16,8 @@
 #include <vector>
 #include <string>
 
-class Tree
+struct Tree
 {
-public:
     enum typeOfNode
     {
         AND = '&',
@@ -112,7 +111,7 @@ public:
                 if (item.weight > maxWeight && this->type == OR && size > 1)
                 {
                     this->children.erase(this->children.begin() + i);
-                    if (i != 0) i--;
+                    i--;
                     size--;
                 }
 
@@ -120,16 +119,20 @@ public:
             }
 
             int maxWeightCurrItem = maxWeight;
-            for (size_t j = 0; j < size; j++)
+
+            if (this->type != OR)
             {
-                if (j == i) continue;
-                if (this->children[j].type == LEAF)
+                for (size_t j = 0; j < size; j++)
                 {
-                    maxWeightCurrItem -= this->children[j].weight;
-                }
-                else
-                {
-                    maxWeightCurrItem -= this->children[j].minWeight;
+                    if (j == i) continue;
+                    if (this->children[j].type == LEAF)
+                    {
+                        maxWeightCurrItem -= this->children[j].weight;
+                    }
+                    else
+                    {
+                        maxWeightCurrItem -= this->children[j].minWeight;
+                    }
                 }
             }
 
@@ -141,7 +144,6 @@ public:
                 i--;
                 size--;
             }
-
         }
 
         this->setMinMaxRoot();

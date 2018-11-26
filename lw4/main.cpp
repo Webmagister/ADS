@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <map>
 
 struct Graph
 {
@@ -20,6 +21,15 @@ struct Graph
 
     std::vector<Graph *> linked;
 };
+
+void printCurrPath(std::vector<std::string> currPath)
+{
+    for (std::string &item : currPath)
+    {
+        std::cout << item << " ";
+    }
+    std::cout << std::endl;
+}
 
 bool alreadyInList(std::string currChildName, std::vector<std::string> currPath)
 {
@@ -38,6 +48,8 @@ void bfs(std::vector<std::vector<std::string>> &allPath, Graph &currChild, std::
          std::string &end, std::vector<std::string> currPath)
 {
     currPath.push_back(currChild.name);
+    printCurrPath(currPath);
+    std::cout << "------" << std::endl;
 
     for (Graph *child : currChild.linked)
     {
@@ -70,7 +82,7 @@ int main(int argc, char *argv[])
     }
 
     std::ifstream inputFile(argv[1]);
-    std::ifstream dictionaryFile("dictionary.txt");
+    std::ifstream dictionaryFile("dictionary1.txt");
     std::ofstream outputFile(argv[2]);
 
     if (!inputFile.is_open() || !outputFile.is_open())
@@ -97,8 +109,10 @@ int main(int argc, char *argv[])
     {
         std::string str;
         std::string str2;
+
         dictionaryFile >> str;
         dictionaryFile >> str2;
+
         listOfTops[std::stoi(str) - 1].linked.push_back(&listOfTops[std::stoi(str2) - 1]);
     }
 

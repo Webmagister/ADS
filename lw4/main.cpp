@@ -1,6 +1,6 @@
 /*
-    Имеются  расписания вылетов самолетов в  ряде  аэропор-
-    тов.  Требуется по  начальному  и  конечному  пунктам  методом
+    Имеются  расписания вылетов самолетов в  ряде  аэропортов.
+    Требуется по  начальному  и  конечному  пунктам  методом
     поиска  в ширину сформировать и выдать дерево возможных путей.
     Проиллюстрировать этапы поиска.
 
@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <queue>
 
 struct Graph
 {
@@ -23,25 +24,93 @@ struct Graph
     std::map<std::string, std::vector<std::string>> children;
 };
 
-bool isNodeInMap(std::map<std::string, std::vector<std::string>> map, std::string nodeName)
+Graph getNode(std::string &nodeName, std::vector<Graph> listOfTops)
+{
+    for (Graph &currNode: listOfTops)
+    {
+        if (currNode.name == nodeName) return currNode;
+    }
+}
+
+bool isNodeInMap(std::map<std::string, std::vector<std::string>> map, std::string &nodeName)
 {
     return map.find(nodeName) != map.end();
 }
 
-void printCurrPath(std::vector<std::string> currPath)
+struct Tree
 {
-    for (std::string &item : currPath)
-    {
-        std::cout << item << " ";
-    }
-    std::cout << std::endl;
-}
+    std::string name;
+    std::string flightCodes = "";
 
-bool alreadyInList(std::string currChildName, std::vector<std::string> currPath)
-{
-    for (int i = 0; i < currPath.size(); ++i)
+    std::map<std::string, Tree> children;
+
+    explicit Tree(const std::string &name)
     {
-        if (currChildName == currPath[i])
+        this->name = name;
+    }
+
+    const bool isChild(std::string &name)
+    {
+        return this->children.find(name) != this->children.end();
+    }
+
+    void create(Graph currNode, std::vector<std::string> chain, size_t pointer, const std::vector<Graph> &listOfTops)
+    {
+        const auto getFlightCodesString = [](std::vector<std::string> flightCodes) -> std::string
+        {
+            if (!flightCodes.empty())
+            {
+                std::string flightCodesString = "[";
+                for (const std::string &flightCode: flightCodes)
+                {
+                    flightCodesString += flightCode;
+                    if (flightCode != flightCodes.back()) flightCodesString += ", ";
+                }
+                flightCodesString += ']';
+
+                return flightCodesString;
+            }
+
+            return "";
+        };
+
+        if (pointer == chain.size()) return;
+
+        Graph topToAdd = getNode(chain.at(pointer), listOfTops);
+        std::vector<std::string> flightCodes{};
+
+        if (isNodeInMap(currNode.children, topToAdd.name))
+        {
+            flightCodes = currNode.children.at(topToAdd.name);
+        }
+
+        if (!this->isChild(topToAdd.name))
+        {
+            Tree tree(topToAdd.name);
+            tree.flightCodes = getFlightCodesString(flightCodes);
+            this->children.insert_or_assign(topToAdd.name, tree);
+        }
+
+        pointer++;
+        this->children.at(topToAdd.name).create(topToAdd, chain, pointer, listOfTops);
+    }
+
+    void printTree(std::ofstream &outputFile, const std::string &indent)
+    {
+        outputFile << indent << this->name << " " << this->flightCodes << std::endl;
+
+        for (auto &[_, child]:this->children)
+        {
+            child.printTree(outputFile, indent + '*');
+        }
+    };
+};
+
+bool alreadyInList(std::string &currChildName, std::vector<std::string> currPath)
+{
+    for (const auto &i : currPath)
+    {
+        if (currChildName == i)
         {
             return true;
         }
@@ -50,11 +119,11 @@ bool alreadyInList(std::string currChildName, std::vector<std::string> currPath)
     return false;
 }
 
-bool alreadyInVector(std::string currChildName, std::vector<Graph *> root)
+bool alreadyInVector(std::string &currChildName, std::vector<Graph *> root)
 {
-    for (int i = 0; i < root.size(); ++i)
+    for (auto &i : root)
     {
-        if (currChildName == root[i]->name)
+        if (currChildName == i->name)
         {
             return true;
         }
@@ -63,49 +132,65 @@ bool alreadyInVector(std::string currChildName, std::vector<Graph *> root)
     return false;
 }
 
-void bfs(std::vector<std::vector<std::string>> &allPath, Graph &currChild, std::string &start,
-         std::string &end, std::vector<std::string> currPath)
+void createTreeOfPaths(Tree &root, std::vector<std::vector<std::string>> allPath, std::vector<Graph> &listOfTops)
 {
-    currPath.push_back(currChild.name);
-//    printCurrPath(currPath);
-//    std::cout << "--------------------------" << std::endl;
-
-    for (Graph *child : currChild.linked)
+    for (std::vector<std::string> &child: allPath)
     {
-        if (child->name == end)
-        {
-            if (isNodeInMap(currChild.children, child->name))
-            {
-                std::string flightCodes;
-                for (int i = 0; i < currChild.children.at(child->name).size(); ++i)
-                {
-                    flightCodes += currChild.children.at(child->name)[i];
-                }
-                currPath.push_back(flightCodes);
-            }
-            currPath.push_back(child->name);
-            allPath.push_back(currPath);
+        Graph currNode = getNode(child.front(), listOfTops);
+        size_t pointer = 1;
+        root.create(currNode, child, pointer, listOfTops);
+    }
+}
 
-            continue;
+std::vector<std::vector<std::string>> bfs(Graph top, std::string &end)
+{
+    std::vector<std::vector<std::string>> allPath;
+    std::queue<std::pair<Graph, std::vector<std::string>>> queue;
+
+    std::pair<Graph, std::vector<std::string>> front;
+    front.first = top;
+    front.second.push_back(top.name);
+    queue.push(front);
+
+    while (!queue.empty())
+    {
+        std::pair<Graph, std::vector<std::string>> currQueueElement = queue.front();
+        queue.pop();
+
+        Graph &currChild = currQueueElement.first;
+        for (const auto &i : currQueueElement.second)
+        {
+            std::cout << i << " ";
         }
-        if (!alreadyInList(child->name, currPath))
+        std::cout << std::endl;
+        for (Graph *child : currChild.linked)
         {
-            std::vector<std::string> tempPath;
-            tempPath = currPath;
-
-            if (isNodeInMap(currChild.children, child->name))
+            if (child->name == end)
             {
-                std::string flightCodes;
-                for (int i = 0; i < currChild.children.at(child->name).size(); ++i)
-                {
-                    flightCodes += currChild.children.at(child->name)[i];
-                }
-                tempPath.push_back(flightCodes);
-            }
+                allPath.push_back(currQueueElement.second);
+                allPath.back().push_back(child->name);
 
-            bfs(allPath, *child, start, end, tempPath);
+                for (const auto &i : allPath.back())
+                {
+                    std::cout << i << " ";
+                }
+                std::cout << std::endl;
+
+                continue;
+            }
+            if (!alreadyInList(child->name, currQueueElement.second))
+            {
+                std::pair<Graph, std::vector<std::string>> newQueueElement;
+                newQueueElement.first = *child;
+                newQueueElement.second = currQueueElement.second;
+                newQueueElement.second.push_back(child->name);
+
+                queue.push(newQueueElement);
+            }
         }
     }
+
+    return allPath;
 }
 
 int main(int argc, char *argv[])
@@ -123,8 +208,8 @@ int main(int argc, char *argv[])
     }
 
     std::ifstream inputFile(argv[1]);
-    std::ifstream dictionaryFile("dictionary.txt");
-    std::ofstream outputFile(argv[2]);
+    std::ifstream dictionaryFile(argv[2]);
+    std::ofstream outputFile(argv[3]);
 
     if (!inputFile.is_open() || !outputFile.is_open())
     {
@@ -179,27 +264,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::vector<std::vector<std::string>> allPath;
-    std::string start = listOfTops.front().name;
+    Graph start = listOfTops.front();
     std::string end = listOfTops.back().name;
 
-    std::vector<std::string> curPath;
-    bfs(allPath, listOfTops.front(), start, end, curPath);
+    std::vector<std::vector<std::string>> allPath = bfs(start, end);
 
-//    for (Graph top : listOfTops)
-//    {
-//        std::cout << top.name << " " << top.linked.size() << std::endl;
-//    }
+    Tree root(allPath.front().front());
 
-    for (std::vector<std::string> &item : allPath)
-    {
-        for (int i = 0; i < item.size(); ++i)
-        {
-            std::cout << item[i] << " ";
-        }
-
-        std::cout << std::endl;
-    }
+    createTreeOfPaths(root, allPath, listOfTops);
+    root.printTree(outputFile, "");
 
     inputFile.close();
     outputFile.close();

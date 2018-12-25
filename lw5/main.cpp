@@ -10,33 +10,110 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "Dict.hpp"
 
-int main(int argc, char *argv[])
+enum class mainControls
 {
-    if (argc < 3)
+    INITIAL, NEW_DICT, OPEN_DICT, EXIT
+};
+
+void printMainMenu()
+{
+    std::cout << "Введите номер пункта меню" << std::endl;
+    std::cout << "1. Новый справочник" << std::endl;
+    std::cout << "2. Открыть справочник" << std::endl;
+    std::cout << "3. Выход" << std::endl;
+}
+
+mainControls getControl()
+{
+    std::string control;
+    std::cin >> control;
+
+    int controlNum = std::stoi(control);
+
+    return static_cast<mainControls>(controlNum);
+}
+
+bool isDictAlreadyExist(std::string fileContent, std::string &name)
+{
+    size_t pointer = 0;
+
+    while (pointer < fileContent.length())
     {
-        std::cout << "There are not enough files." << std::endl;
-        return 1;
+        std::string currFileName;
+        while (fileContent[pointer] != '\n' && pointer < fileContent.length())
+        {
+            currFileName += fileContent[pointer];
+            pointer++;
+        }
+        pointer++;
+
+        if (currFileName == name) return true;
     }
 
-    if (static_cast<std::string>(argv[1]) == static_cast<std::string>(argv[2]))
-    {
-        std::cout << "Files is equal." << std::endl;
-        return 1;
-    }
+    return false;
+}
 
-    std::ifstream inputFile(argv[1]);
-    std::ifstream dictionaryFile(argv[2]);
-    std::ofstream outputFile(argv[3]);
+void createDirectory(std::string &name)
+{
+    std::ifstream inputFile("directoryList.txt");
 
-    if (!inputFile.is_open() || !outputFile.is_open())
-    {
-        std::cout << "File does not open." << std::endl;
-        return 1;
-    }
+    std::stringstream fileContentSS;
+    fileContentSS << inputFile.rdbuf();
+    std::string fileContent = fileContentSS.str();
 
     inputFile.close();
+
+    if (isDictAlreadyExist(fileContent, name)) return;
+
+    std::ofstream outputFile("directoryList.txt");
+    outputFile << fileContent << std::endl;
+    outputFile << name << std::endl;
+
     outputFile.close();
+
+    std::ofstream newDict("dictionary/" + name + ".dat");
+}
+
+void printDirectory()
+{
+    std::ifstream inputFile("directoryList.txt");
+    std::cout << inputFile.rdbuf() << std::endl;
+
+    inputFile.close();
+}
+
+int main()
+{
+    mainControls currControl = mainControls::INITIAL;
+    while (currControl != mainControls::EXIT)
+    {
+        printMainMenu();
+        currControl = getControl();
+        if (currControl == mainControls::NEW_DICT)
+        {
+            std::cout << "Введите имя справочника: " << std::endl;
+
+            std::string str;
+            std::cin >> str;
+            createDirectory(str);
+        }
+        else if (currControl == mainControls::OPEN_DICT)
+        {
+            std::cout << "Выберете справочник: " << std::endl;
+            printDirectory();
+
+            std::string str;
+            std::cin >> str;
+            bool isSuccess = Dict::openDict(str);
+            if (!isSuccess) std::cout << "Не удалось открыть файл" << std::endl;
+        }
+        else
+        {
+            continue;
+        }
+    }
 
     return 0;
 }

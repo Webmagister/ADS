@@ -1,1 +1,1 @@
-add_executable(lw5 main.cpp)
+add_executable(lw5 main.cpp Dict.cpp Dict.hpp)

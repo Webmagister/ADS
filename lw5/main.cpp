@@ -73,7 +73,7 @@ void createDirectory(std::string &name)
 
     outputFile.close();
 
-    std::ofstream newDict("dictionary/" + name + ".dat");
+    std::ofstream newDict("dictionary/" + name + ".txt");
 }
 
 void printDirectory()
@@ -106,6 +106,7 @@ int main()
 
             std::string str;
             std::cin >> str;
+
             bool isSuccess = Dict::openDict(str);
             if (!isSuccess) std::cout << "Не удалось открыть файл" << std::endl;
         }
